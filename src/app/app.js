@@ -1,25 +1,25 @@
 // JavaScripts goes here.
 import React, { Component, PropTypes } from 'react'
-import Header from './components/Header'
-import MainSection from './components/MainSection'
+// import Header from './Header'
+// import TestList from './TestList'
+// import TestItem from './TestItem'
 import Intent from '../intent'
 
-class TodoApp extends Component {
+class App extends Component {
   render() {
-    const { todos, Intent } = this.props
+    // const { Intent } = this.props;
 
     return (
       <div>
-        <Header addTodo={Intent.add} />
-        <MainSection todos={todos} Intent={Intent} />
+        <button>Run all Tests</button>
       </div>
     )
   }
 }
 
-TodoApp.propTypes = {
-  todos: PropTypes.array.isRequired,
-  Intent: PropTypes.object.isRequired
+App.propTypes = {
+  allComplete: PropTypes.bool.isRequired,
+  allNotComplete: PropTypes.bool.isRequired
 }
 
-export default TodoApp;
+export default App;

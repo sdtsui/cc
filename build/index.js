@@ -61,28 +61,28 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _appState = __webpack_require__(/*! ./appState */ 162);
+	var _intent = __webpack_require__(/*! ./intent */ 165);
 	
-	var _appState2 = _interopRequireDefault(_appState);
+	var _intent2 = _interopRequireDefault(_intent);
+	
+	var _appAppJs = __webpack_require__(/*! ./app/app.js */ 170);
+	
+	var _appAppJs2 = _interopRequireDefault(_appAppJs);
 	
 	var Rx = __webpack_require__(/*! rx */ 2);
 	var React = __webpack_require__(/*! react */ 5);
 	var ReactDOM = __webpack_require__(/*! react-dom */ 161);
+	var Model = __webpack_require__(/*! ./model */ 168);
 	
-	console.log('appState :', appState);
+	var Observable = Model.subject.map(function (appState) {
+	  return appState;
+	});
 	
-	// let Model = {
-	//   subject : new Rx.ReplaySubject(1);
-	// };
-
-	// let Observable = Model.subject.map((appState) => {return appState;});
-
-	// Observable.subscribe((appState) => {
-	//   ReactDOM.render(
-	//     <TodoApp {...appState}/>,
-	//     document.getElementById('app')
-	//   );
-	// });
+	Observable.subscribe(function (appState) {
+	  ReactDOM.render(React.createElement(_appAppJs2['default'], null), document.getElementById('app'));
+	});
+	
+	_intent2['default'].startAllTests();
 
 /***/ },
 /* 2 */
@@ -30926,45 +30926,356 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
-	var _helperGenerateDummyTest = __webpack_require__(/*! ./helper/generateDummyTest */ 163);
+	var _helperTestFactory = __webpack_require__(/*! ./helper/testFactory */ 164);
 	
-	var _helperGenerateDummyTest2 = _interopRequireDefault(_helperGenerateDummyTest);
+	var _helperTestFactory2 = _interopRequireDefault(_helperTestFactory);
 	
-	console.log('in appState');
+	var _keys = __webpack_require__(/*! ./keys */ 166);
 	
-	console.log('in appState', _helperGenerateDummyTest2['default']);
+	var _keys2 = _interopRequireDefault(_keys);
 	
-	var tests = [{ description: "commas are rotated properly", run: (0, _helperGenerateDummyTest2['default'])() }, { description: "exclamation points stand up straight", run: (0, _helperGenerateDummyTest2['default'])() }, { description: "run-on sentences don't run forever", run: (0, _helperGenerateDummyTest2['default'])() }, { description: "question marks curl down, not up", run: (0, _helperGenerateDummyTest2['default'])() }, { description: "semicolons are adequately waterproof", run: (0, _helperGenerateDummyTest2['default'])() }, { description: "capital letters can do yoga", run: (0, _helperGenerateDummyTest2['default'])() }];
+	var _intent = __webpack_require__(/*! ./intent */ 165);
+	
+	var _intent2 = _interopRequireDefault(_intent);
+	
+	var generateDummyTest = _helperTestFactory2['default'].generateDummyTest;
+	
+	var __testIdCounter = 0;
+	
+	//callback should accept testPassed
+	//should move into a helper function
+	function _createNewTest(defaultTest) {
+	  var description = defaultTest.description;
+	
+	  var id = __testIdCounter++;
+	
+	  var runFunc = generateDummyTest(id, _intent2['default'].completeTest);
+	
+	  var newTest = Object.assign({}, {
+	    description: defaultTest.description,
+	    id: id,
+	    run: runFunc,
+	    state: _keys2['default'].TEST_NOT_STARTED
+	  });
+	
+	  return newTest;
+	}
+	
+	var defaultTests = [{ description: "commas are rotated properly" }, { description: "exclamation points stand up straight" }, { description: "run-on sentences don't run forever" }, { description: "question marks curl down, not up" }, { description: "semicolons are adequately waterproof" }, { description: "capital letters can do yoga" }];
+	
+	var tests = defaultTests.map(function (defaultTest) {
+	  return _createNewTest(defaultTest);
+	});
+	
+	console.log(tests);
 	
 	module.exports = {
 	  tests: tests
 	};
 
 /***/ },
-/* 163 */
-/*!*****************************************!*\
-  !*** ./src/helper/generateDummyTest.js ***!
-  \*****************************************/
+/* 163 */,
+/* 164 */
+/*!***********************************!*\
+  !*** ./src/helper/testFactory.js ***!
+  \***********************************/
 /***/ function(module, exports) {
 
 	"use strict";
 	
-	function generateDummyTest() {
-	  var delay = 7000 + Math.random() * 7000;
+	function generateDummyTest(id, callback) {
+	  var delay = 500 + Math.random() * 500;
 	  var testPassed = Math.random() > 0.5;
 	
 	  console.log("in generate", delay, testPassed);
 	
-	  return function (callback) {
+	  return (function () {
 	    setTimeout(function () {
-	      callback(testPassed);
+	      console.log("TEST COMPLETE : ", delay, testPassed, callback);
+	      callback(id, testPassed);
 	    }, delay);
-	  };
+	  }).bind(null, callback);
 	}
 	
 	module.exports = {
 	  generateDummyTest: generateDummyTest
 	};
+
+/***/ },
+/* 165 */
+/*!***********************!*\
+  !*** ./src/intent.js ***!
+  \***********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Rx = __webpack_require__(/*! rx */ 2);
+	var Keys = __webpack_require__(/*! ./keys */ 166);
+	
+	// need all the ways appState can change here
+	var intentSubject = new Rx.ReplaySubject(1);
+	var Intent = {
+	  subject: intentSubject,
+	
+	  completeTest: function completeTest(id) {
+	    var testPassed = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+	
+	    console.log("__________COMPLETE TEST", id, testPassed);
+	    //error checking for passed or failed
+	    intentSubject.onNext({
+	      key: Keys.TEST_COMPLETE,
+	      id: id,
+	      passed: testPassed
+	    });
+	  },
+	
+	  startAllTests: function startAllTests() {
+	    console.log("START ALL TESTS");
+	    //add running
+	    intentSubject.onNext({
+	      key: Keys.TESTS_START_ALL
+	    });
+	  }
+	};
+	
+	module.exports = Intent;
+
+/***/ },
+/* 166 */
+/*!*********************!*\
+  !*** ./src/keys.js ***!
+  \*********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var keyMirror = __webpack_require__(/*! keymirror */ 167);
+	
+	module.exports = keyMirror({
+	  TEST_NOT_STARTED: null,
+	  TEST_START: null,
+	  TEST_COMPLTE: null,
+	  TEST_RUNNING: null,
+	  TEST_PASSED: null,
+	  TEST_FAILED: null,
+	  TESTS_START_ALL: null,
+	  TESTS_ALL_COMPLETE: null, //needed?
+	  TESTS_ALL_NOT_STARTED: null });
+	//needed?
+
+/***/ },
+/* 167 */
+/*!******************************!*\
+  !*** ./~/keymirror/index.js ***!
+  \******************************/
+/***/ function(module, exports) {
+
+	/**
+	 * Copyright 2013-2014 Facebook, Inc.
+	 *
+	 * Licensed under the Apache License, Version 2.0 (the "License");
+	 * you may not use this file except in compliance with the License.
+	 * You may obtain a copy of the License at
+	 *
+	 * http://www.apache.org/licenses/LICENSE-2.0
+	 *
+	 * Unless required by applicable law or agreed to in writing, software
+	 * distributed under the License is distributed on an "AS IS" BASIS,
+	 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	 * See the License for the specific language governing permissions and
+	 * limitations under the License.
+	 *
+	 */
+	
+	"use strict";
+	
+	/**
+	 * Constructs an enumeration with keys equal to their value.
+	 *
+	 * For example:
+	 *
+	 *   var COLORS = keyMirror({blue: null, red: null});
+	 *   var myColor = COLORS.blue;
+	 *   var isColorValid = !!COLORS[myColor];
+	 *
+	 * The last line could not be performed if the values of the generated enum were
+	 * not equal to their keys.
+	 *
+	 *   Input:  {key1: val1, key2: val2}
+	 *   Output: {key1: key1, key2: key2}
+	 *
+	 * @param {object} obj
+	 * @return {object}
+	 */
+	var keyMirror = function(obj) {
+	  var ret = {};
+	  var key;
+	  if (!(obj instanceof Object && !Array.isArray(obj))) {
+	    throw new Error('keyMirror(...): Argument must be an object.');
+	  }
+	  for (key in obj) {
+	    if (!obj.hasOwnProperty(key)) {
+	      continue;
+	    }
+	    ret[key] = key;
+	  }
+	  return ret;
+	};
+	
+	module.exports = keyMirror;
+
+
+/***/ },
+/* 168 */
+/*!**********************!*\
+  !*** ./src/model.js ***!
+  \**********************/
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	var _appState = __webpack_require__(/*! ./appState */ 162);
+	
+	var _appState2 = _interopRequireDefault(_appState);
+	
+	var Rx = __webpack_require__(/*! rx */ 2);
+	var Keys = __webpack_require__(/*! ./keys */ 166);
+	var Intent = __webpack_require__(/*! ./intent */ 165);
+	
+	var subject = new Rx.ReplaySubject(1);
+	
+	var state = _appState2['default'];
+	
+	//impure
+	function startAllTests() {
+	  state.tests.forEach(function (test) {
+	    test.run();
+	  });
+	}
+	
+	function completeTest(id, testPassed) {
+	  console.log();
+	  var completeOneTest = function completeOneTest(test) {
+	    if (test.id === id) {
+	      test.state = testPassed ? Keys.TEST_PASSED : Keys.TEST_FAILED;
+	    }
+	  };
+	
+	  var tests = state.tests;
+	  console.log('tests :', tests, id);
+	  tests = tests.map(completeOneTest);
+	  // console.log('tests after Map:', tests);
+	
+	  state = Object.assign({}, state, { tests: tests });
+	
+	  subject.onNext(state);
+	}
+	
+	Intent.subject.subscribe(function (payload) {
+	  console.log("EVENT:", payload);
+	  console.log("EVENT:", payload.key);
+	  switch (payload.key) {
+	    case Keys.TESTS_START_ALL:
+	      startAllTests();
+	      break;
+	    case Keys.TEST_COMPLETE:
+	      console.log("inside model - test complete  switch:", payload);
+	      completeTest(payload.id, payload.passed);
+	      break;
+	    default:
+	      console.warn(payload.key + ' not recognized in model.');
+	  }
+	});
+	
+	subject.onNext(state);
+	
+	console.log("model loading complete:", state.tests);
+	
+	exports['default'] = {
+	  subject: subject
+	};
+	module.exports = exports['default'];
+
+/***/ },
+/* 169 */,
+/* 170 */
+/*!************************!*\
+  !*** ./src/app/app.js ***!
+  \************************/
+/***/ function(module, exports, __webpack_require__) {
+
+	// JavaScripts goes here.
+	'use strict';
+	
+	Object.defineProperty(exports, '__esModule', {
+	  value: true
+	});
+	
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	
+	var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	
+	function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+	
+	var _react = __webpack_require__(/*! react */ 5);
+	
+	var _react2 = _interopRequireDefault(_react);
+	
+	// import Header from './Header'
+	// import TestList from './TestList'
+	// import TestItem from './TestItem'
+	
+	var _intent = __webpack_require__(/*! ../intent */ 165);
+	
+	var _intent2 = _interopRequireDefault(_intent);
+	
+	var App = (function (_Component) {
+	  _inherits(App, _Component);
+	
+	  function App() {
+	    _classCallCheck(this, App);
+	
+	    _get(Object.getPrototypeOf(App.prototype), 'constructor', this).apply(this, arguments);
+	  }
+	
+	  _createClass(App, [{
+	    key: 'render',
+	    value: function render() {
+	      // const { Intent } = this.props;
+	
+	      return _react2['default'].createElement(
+	        'div',
+	        null,
+	        _react2['default'].createElement(
+	          'button',
+	          null,
+	          'Run all Tests'
+	        )
+	      );
+	    }
+	  }]);
+	
+	  return App;
+	})(_react.Component);
+	
+	App.propTypes = {
+	  allComplete: _react.PropTypes.bool.isRequired,
+	  allNotComplete: _react.PropTypes.bool.isRequired
+	};
+	
+	exports['default'] = App;
+	module.exports = exports['default'];
 
 /***/ }
 /******/ ]);

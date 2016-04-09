@@ -1,7 +1,7 @@
 {
-  "name": "react-rxjs-webpack-es6-barebones-starter",
+  "name": "rdi",
   "version": "0.0.2",
-  "description": "Barebones starter kit for React and RxJS, using Webpack and ES6.",
+  "description": "rdi-test-runner",
   "main": "index.js",
   "scripts": {
     "dev": "webpack -wdc --progress",
@@ -18,6 +18,8 @@
     "react": "^0.14.8",
     "rx": "^2.5.2",
     "webpack": "^1.8.9",
-    "react-dom": "^0.14.8"
+    "react-dom": "^0.14.8",
+    "keymirror": "^0.1.1",
+    "classnames": "^2.1.2"
   }
 }

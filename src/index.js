@@ -1,19 +1,17 @@
 let Rx = require('rx');
 let React = require('react');
 let ReactDOM = require('react-dom');
-import tests from './appState';
+let Model = require('./model');
+import Intent from './intent';
+import App from './app/app.js'
 
-console.log('appState :', appState);
+let Observable = Model.subject.map((appState) => {return appState;});
 
-// let Model = {
-//   subject : new Rx.ReplaySubject(1);
-// };
+Observable.subscribe((appState) => {
+  ReactDOM.render(
+    <App/>,
+    document.getElementById('app')
+  );
+});
 
-// let Observable = Model.subject.map((appState) => {return appState;});
-
-// Observable.subscribe((appState) => {
-//   ReactDOM.render(
-//     <TodoApp {...appState}/>,
-//     document.getElementById('app')
-//   );
-// });
+Intent.startAllTests();

@@ -25,6 +25,8 @@
     status: use state keys here ['NOT_STARTED', etc]    
   }
 #### possible states: 
+  - not started, passed ,failed, running
+  - Is it ideal that app state atom holds *only* the tests, and no other props? Discover while implementing!
 
 #### ways that state can change:
   - testsRunning: defaults to false
@@ -33,6 +35,14 @@
     testsDone // unnecessary! 
   - tests:
     *completeTest(passedBool, idNum)*
+
+    /\ draft
+
+    \/ revised: test state is all that matters. react can state to props. 
+    - need a way to start test
+    - need a way to complete a test
+    - need a way to check if all tests are complete, and do something if so
+    - need a way to check if all tests are not-started (at beginning), and enable a button if so (does it make sense to default to disabled?)
 
 
 ## UI:
@@ -60,7 +70,19 @@ Acceptance Criteria : how UI will work
     - if every test has NOT_STARTED, return true
 
 #### 
-React component heirarchy : 
+design for react component heirarchy : 
 - header : has button, only needs "all tests not started" prop; also makes visible an "all finished" notification
+  props needed: see testList
 - testList
+  props needed:
+    - all complete, for "FINISHED!!!" notification
+    - non-complete, for button
   - testItem
+    props needed:
+      - text from test.description
+      - state from test.status
+
+notes @ 2:02
+- omg. fun.
+- much incomplete.
+- thanks!
